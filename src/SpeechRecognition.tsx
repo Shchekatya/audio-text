@@ -1,9 +1,18 @@
 import { useState } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import Button from 'react-bootstrap/Button';
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+    mozSpeechRecognition:any;
+    msSpeechRecognition:any;
+    transcript:string
+  }
+}
 
 export const SpeechRecognition=()=> {
-    const [speech, setSpeech]=useState([])
+    const [speech, setSpeech]=useState<string[][]>([])
     const recognition = new (window.SpeechRecognition ||
         window.webkitSpeechRecognition ||
         window.mozSpeechRecognition ||
@@ -13,16 +22,15 @@ export const SpeechRecognition=()=> {
       recognition.interimResults = true;
       recognition.maxAlternatives = 30;  
       
-      let phrase=[]
-      recognition.onresult = function(event) {  
+      let phrase:string[]=[]
+      recognition.onresult = function(event:any) {  
         let current = event.resultIndex;
         window.transcript = event.results[current][0].transcript;
         let a=Math.floor(Math.random() * 500);
         phrase[current]=(`${window.transcript} ${a}`)
-        console.log(window.transcript);
-        setSpeech((speech) => [phrase])
+        console.log(phrase);
+        setSpeech(() => [phrase])
       };
-      console.log(speech[0])
       const startListening=()=> {
         recognition.continuous = true;
         recognition.start()
