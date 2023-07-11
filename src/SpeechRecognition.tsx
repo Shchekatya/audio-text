@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useRef } from "react";
 import { v4 as uuidv4 } from 'uuid';
 import Button from 'react-bootstrap/Button';
 declare global {
@@ -12,32 +12,33 @@ declare global {
 }
 
 export const SpeechRecognition=()=> {
-    const [speech, setSpeech]=useState<string[][]>([])
-    const recognition = new (window.SpeechRecognition ||
-        window.webkitSpeechRecognition ||
-        window.mozSpeechRecognition ||
-        window.msSpeechRecognition)();
-      recognition.lang = "ru-RU";   
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.maxAlternatives = 30;  
+    const [speech, setSpeech]=useState<string[][]>([[" "]]);  
+    const recognitionRef = useRef(new (window.SpeechRecognition ||
+      window.webkitSpeechRecognition ||
+      window.mozSpeechRecognition ||
+      window.msSpeechRecognition)());
+    recognitionRef.current.lang = "ru-RU";   
+    recognitionRef.current.continuous = true;
+    recognitionRef.current.interimResults = true;
+    recognitionRef.current.maxAlternatives = 30;  
       
-      let phrase:string[]=[]
-      recognition.onresult = function(event:any) {  
-        let current = event.resultIndex;
-        window.transcript = event.results[current][0].transcript;
-        let a=Math.floor(Math.random() * 500);
-        phrase[current]=(`${window.transcript} ${a}`)
-        console.log(phrase);
-        setSpeech(() => [phrase])
-      };
+      let phrase:string[]=[]     
       const startListening=()=> {
-        recognition.continuous = true;
-        recognition.start()
+        setSpeech([]);
+        recognitionRef.current.start();
+        recognitionRef.current.onresult = function(event:any) { 
+          console.log(recognitionRef.current);
+          console.log(event)
+          let current = event.resultIndex;
+          window.transcript = event.results[current][0].transcript;
+          let a=Math.floor(Math.random() * 500);
+          phrase[current]=(`${window.transcript} ${a}`)
+          console.log(phrase);
+          setSpeech(() => [phrase])
+        };
       }
     const stopListening=()=> {    
-        recognition.stop()
-        recognition.continuous = false;
+      recognitionRef.current.stop();       
       }
 
 
